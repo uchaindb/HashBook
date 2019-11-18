@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -80,37 +81,46 @@ When a person can no longer laugh at himself, it is time for others to laugh at 
 
             var sb = new StringBuilder();
             sb.AppendLine("<style>" +
-                "table { font-family: monospace; }" +
-                " table td:nth-child(1) {color: green;}" +
-                " table td:nth-child(2) {color: blue;}" +
+                " body { font-family: monospace; max-width: 500px; }" +
+                " .md5 { color: green }" +
+                " .input { color: blue; margin-left: 15px; }" +
+                //"table { font-family: monospace; }" +
+                //" table td:nth-child(1) {color: green;}" +
+                //" table td:nth-child(2) {color: blue;}" +
                 "</style>");
-            sb.AppendLine("<table>");
+            //sb.AppendLine("<table>");
+            sb.AppendLine("<div>");
 
-            for (int i = 0; i < 256; i++)
+            var sens = sentences
+                .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                .OrderBy(_ => _);
+            foreach (var sentence in sens)
             {
-                var source = Convert.ToString(i, 2);
-                sb.AppendLine($"<tr><td>{source}</td><td>{CreateMD5(source)}</td></tr>");
-            }
-
-            foreach (var sentence in sentences.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
-            {
-                sb.AppendLine($"<tr><td>{sentence}</td><td>{CreateMD5(sentence)}</td></tr>");
+                sb.Append(Pair(sentence));
             }
 
             for (int i = 0; i < 10000; i++)
             {
-                var source = i.ToString();
-                sb.AppendLine($"<tr><td>{source}</td><td>{CreateMD5(source)}</td></tr>");
+                sb.Append(Pair(i.ToString()));
             }
 
             for (int i = 0; i < 256; i++)
             {
-                var source = Convert.ToString(i, 2);
-                sb.AppendLine($"<tr><td>{source}</td><td>{CreateMD5(source)}</td></tr>");
+                sb.Append(Pair(Convert.ToString(i, 2)));
             }
-            sb.AppendLine("</table>");
+
+            //sb.AppendLine("</table>");
+            sb.AppendLine("</div>");
             File.WriteAllText("output.html", sb.ToString());
         }
+        public static string Pair(string input)
+        {
+            //return $"<tr><td>{input}</td><td>{CreateMD5(input)}</td></tr>";
+            return $"<span class=\"md5\">{CreateMD5(input)}</span>" +
+                $"<span class=\"input\">{input}</span>" +
+                $"<br />";
+        }
+
         public static string CreateMD5(string input)
         {
             // Use input string to calculate MD5 hash
